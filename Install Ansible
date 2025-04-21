@@ -1,0 +1,17 @@
+Step 1 — Installing Ansible
+
+sudo apt-add-repository ppa:ansible/ansible
+
+sudo apt update
+
+sudo apt install ansible
+
+Step 2 — Setting Up the Inventory File
+
+sudo nano /etc/ansible/hosts
+
+
+ansible-inventory --list -y
+
+
+
