@@ -1,0 +1,24 @@
+sudo vi hosts
+
+
+sudo chmod 777 hosts
+
+sudo vi ansible-keypair.pem
+
+
+sudo chmod 400 ansible-keypair.pem
+
+sudo ansible -m ping all --private-key=ansible-keypair.pem -u ubuntu
+
+sudo ansible -m ping dev --private-key=ansible-keypair.pem -u ubuntu
+
+sudo ansible -m ping test --private-key=ansible-keypair.pem -u ubuntu
+
+sudo ansible all -m shell -a "uname" --private-key=ansible-keypair.pem -u ubuntu
+
+sudo ansible all -m shell -a "uptime" --private-key=ansible-keypair.pem -u ubuntu
+
+sudo ansible all -m shell -a "free -m" --private-key=ansible-keypair.pem -u ubuntu
+
+
+sudo ansible-playbook -i hosts --private-key=ansible-keypair.pem -v nginx.yml -u ubuntu
