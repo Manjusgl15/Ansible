@@ -1,0 +1,37 @@
+---
+- name: Launch EC2 instance
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    instance_name: "MyAnsibleEC2"
+    region: "us-east-1"
+    ami_id: "ami-084568db4383264d4"  # Example Amazon Linux 2 AMI in us-east-1
+    instance_type: "t2.micro"
+    key_name: "test"
+    security_group: "sg-004a1a9c18fd3c3cf"
+    subnet_id: "subnet-0df122a7c81b0c178"
+
+  tasks:
+    - name: Launch EC2 instance
+      amazon.aws.ec2_instance:
+        name: "{{ instance_name }}"
+        key_name: "{{ key_name }}"
+        instance_type: "{{ instance_type }}"
+        image_id: "{{ ami_id }}"
+        region: "{{ region }}"
+        wait: true
+        count: 1
+        network:
+          subnet_id: "{{ subnet_id }}"
+          assign_public_ip: true
+          security_group_ids:
+            - "{{ security_group }}"
+        tags:
+          Environment: "Ansible"
+      register: ec2
+
+    - name: Show instance info
+      debug:
+        var: ec2.instances
