@@ -22,3 +22,7 @@ sudo ansible all -m shell -a "free -m" --private-key=ansible-keypair.pem -u ubun
 
 
 sudo ansible-playbook -i hosts --private-key=ansible-keypair.pem -v nginx.yml -u ubuntu
+
+
+
+
