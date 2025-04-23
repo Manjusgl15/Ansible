@@ -1,0 +1,25 @@
+1  sudo apt update && sudo apt upgrade -y
+    2  sudo apt install python3-pip -y
+    3  pip3 install boto3 botocore
+    4  python3 -c "import boto3; print(boto3.__version__)"
+    5  python3 -c "import botocore; print(botocore.__version__)"
+    6  pip list | grep boto
+    7  sudo apt-add-repository ppa:ansible/ansible
+    8  sudo apt update
+    9  sudo apt install ansible
+   10  cd /etc/ansible
+   11  aws configure
+   12  sudo apt  install awscli
+   13  aws configure
+   14  ls
+   15  sudo vi create-ec2.yml
+   16  sudo ansible-playbook create-ec2.yml 
+   17  pip3 install boto
+   18  sudo ansible-playbook create-ec2.yml 
+   19  pip list | grep boto
+   20  sudo ansible-playbook -vvv create-ec2.yml 
+   21  sudo ansible-playbook create-ec2.yml 
+   22  sudo /usr/bin/python3 -m pip install boto3 botocore
+   23  sudo ansible-playbook create-ec2.yml 
+   24  histroy
+   25  history
