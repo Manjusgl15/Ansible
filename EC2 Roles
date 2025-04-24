@@ -1,0 +1,58 @@
+Folder Structure:
+
+ec2-launch/
+├── site.yml
+├── inventory
+├── roles/
+│   └── ec2_instance/
+│       ├── tasks/
+│       │   └── main.yml
+│       └── vars/
+│           └── main.yml
+
+
+Step 1: Create the Role
+
+- Sudo Ansible-galaxy init ec2_instance
+
+Step 2. roles/ec2_instance/tasks/main.yml
+
+- name: Launch EC2 instance
+  amazon.aws.ec2_instance:
+    name: "{{ ec2_name }}"
+    key_name: "{{ key_name }}"
+    instance_type: "{{ instance_type }}"
+    image_id: "{{ ami_id }}"
+    region: "{{ region }}"
+    security_group: "{{ security_group }}"
+    subnet_id: "{{ subnet_id }}"
+    wait: yes
+    count: 1
+    tags:
+      Name: "{{ ec2_name }}"
+  register: ec2_result
+
+- name: Output instance public IP
+  debug:
+    var: ec2_result.instances[0].public_ip_address
+
+step 3: roles/ec2_instance/vars/main.yml
+
+region: us-east-1
+ami_id: ami-0abcdef1234567890  # Change to a valid AMI ID in your region
+instance_type: t2.micro
+key_name: my-key               # Replace with your actual key pair name
+security_group: sg-0123456789abcdef0
+subnet_id: subnet-0abc123456def7890
+ec2_name: my-ansible-ec2
+
+Step: 4
+site.yml (Main Playbook)
+
+- name: Launch EC2 Instance
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  roles:
+    - ec2_instance
+
