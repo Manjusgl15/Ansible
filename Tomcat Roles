@@ -1,0 +1,106 @@
+Step 1: Create the Role
+$ ansible-galaxy init tomcat
+
+Step2: File Structure to Modify
+
+tomcat/
+├── tasks/main.yml
+├── vars/main.yml
+├── templates/tomcat.service.j2
+
+Step 3: tasks/main.yml
+
+- name: Ensure Java is installed
+  apt:
+    name: default-jdk
+    state: present
+    update_cache: yes
+
+- name: Create tomcat user
+  user:
+    name: tomcat
+    shell: /bin/false
+
+- name: Download Tomcat
+  get_url:
+    url: "{{ tomcat_url }}"
+    dest: /tmp/apache-tomcat.tar.gz
+
+- name: Create installation directory
+  file:
+    path: "{{ tomcat_install_dir }}"
+    state: directory
+    owner: tomcat
+    group: tomcat
+
+- name: Extract Tomcat
+  unarchive:
+    src: /tmp/apache-tomcat.tar.gz
+    dest: "{{ tomcat_install_dir }}"
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+    owner: tomcat
+    group: tomcat
+
+- name: Copy Tomcat service file
+  template:
+    src: tomcat.service.j2
+    dest: /etc/systemd/system/tomcat.service
+  notify: Start Tomcat
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+
+
+Step 4: vars/main.yml
+
+tomcat_version: 9.0.85
+tomcat_url: "https://downloads.apache.org/tomcat/tomcat-9/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz"
+tomcat_install_dir: /opt/tomcat
+
+
+Step 5: templates/tomcat.service.j2
+
+[Unit]
+Description=Apache Tomcat Web Application Container
+After=network.target
+
+[Service]
+Type=forking
+
+User=tomcat
+Group=tomcat
+
+Environment=CATALINA_PID={{ tomcat_install_dir }}/temp/tomcat.pid
+Environment=CATALINA_HOME={{ tomcat_install_dir }}
+Environment=CATALINA_BASE={{ tomcat_install_dir }}
+ExecStart={{ tomcat_install_dir }}/bin/startup.sh
+ExecStop={{ tomcat_install_dir }}/bin/shutdown.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
+
+Step 5: handlers/main.yml
+
+- name: Start Tomcat
+  systemd:
+    name: tomcat
+    state: started
+    enabled: yes
+
+
+Step 6: playbook: install-tomcat.yml
+---
+- name: Install Tomcat on Ubuntu
+  hosts: all
+  become: true
+  roles:
+    - tomcat
+
+
+Run: sudo ansible-playbook -i hosts --private-key=ansible-keypair.pem -v install-tomcat.yml -u ubuntu
+
+
