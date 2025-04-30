@@ -6,6 +6,8 @@ sudo apt update
 
 sudo apt install ansible
 
+ansible --version
+
 Step 2 — Setting Up the Inventory File
 
 sudo nano /etc/ansible/hosts
