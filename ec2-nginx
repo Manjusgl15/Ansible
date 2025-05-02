@@ -1,0 +1,72 @@
+---
+- name: Launch EC2 instance on AWS
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    region: us-east-1
+    ami_id: ami-0f9de6e2d2f067fca  # Amazon Linux 2 AMI in us-east-1
+    instance_type: t2.micro
+    key_name: key            # Replace with your actual key pair name
+    security_group: sg-0578805d8c4698e99
+    subnet_id: subnet-014f3cfe5d24a851d      # Optional if using default VPC
+
+  tasks:
+    - name: Launch EC2 instance
+      amazon.aws.ec2_instance:
+        name: "MyEC2Instance"
+        key_name: "{{ key_name }}"
+        instance_type: "{{ instance_type }}"
+        image_id: "{{ ami_id }}"
+        region: "{{ region }}"
+        wait: yes
+        count: 1
+        security_groups: [ "{{ security_group }}" ]
+        subnet_id: "{{ subnet_id }}"
+        tags:
+          Environment: "Dev"
+          Project: "AnsibleEC2Demo"
+          assign_public_ip: yes
+      register: ec2
+
+    - name: Show instance details
+      debug:
+        var: ec2.instances[0]
+
+    - name: Add new instance to host group
+      add_host:
+        hostname: "{{ item.public_ip_address }}"
+        groupname: launched
+      loop: "{{ ec2.instances }}"
+
+    - name: Wait for SSH to come up
+      wait_for:
+        host: "{{ item.public_ip_address }}"
+        port: 22
+        delay: 10
+        timeout: 320
+        state: started
+      loop: "{{ ec2.instances }}"
+- name: Configure EC2 instance
+  hosts: launched
+  remote_user: ubuntu
+  become: yes
+  vars:
+    ansible_ssh_private_key_file: ansible-keypair.pem  # Replace with your path
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Ensure Nginx is running
+      service:
+        name: nginx
+        state: started
+        enabled: yes
